@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Nền đỏ lá cờ Việt Nam -->
+  <rect width="100" height="100" fill="#DA251D"/>
+  
+  <!-- Ngôi sao vàng 5 cánh chính giữa -->
+  <!-- Tính toán tọa độ cho ngôi sao 5 cánh đều -->
+  <path d="M50 15 L58 38 L82 38 L63 52 L71 75 L50 60 L29 75 L37 52 L18 38 L42 38 Z" fill="#FFD700"/>
+</svg>

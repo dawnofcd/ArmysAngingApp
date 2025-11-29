@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own data
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Users can create their own document when registering
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Users can update their own data (except role)
+      allow update: if isAuthenticated() && request.auth.uid == userId && 
+                     (!('role' in request.resource.data.diff(resource.data).affectedKeys()));
+      
+      // Only admins can delete users or update roles
+      allow delete: if isAdmin();
+      // Admin can update any user (including role)
+      allow update: if isAdmin();
+    }
+    
+    // Categories collection
+    match /categories/{categoryId} {
+      // Authenticated users can read
+      allow read: if isAuthenticated();
+      
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+    
+    // Songs collection
+    match /songs/{songId} {
+      // Authenticated users can read
+      allow read: if isAuthenticated();
+      
+      // Only admins can write
+      allow write: if isAdmin();
+    }
+    
+    // Comments collection
+    match /comments/{commentId} {
+      // Authenticated users can read all comments
+      allow read: if isAuthenticated();
+      
+      // Admins can do anything (create, update, delete any comment)
+      allow write: if isAdmin();
+      
+      // Users can create their own comments
+      // Validate required fields
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId == request.auth.uid &&
+                     request.resource.data.songId is string &&
+                     request.resource.data.userName is string &&
+                     request.resource.data.content is string &&
+                     request.resource.data.createdAt is number;
+      
+      // Users can update their own comments
+      allow update: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid &&
+                     request.resource.data.content is string;
+      
+      // Users can delete their own comments
+      allow delete: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+    }
+    
+    // Analytics collection
+    match /analytics/{songId} {
+      // Authenticated users can read
+      allow read: if isAuthenticated();
+      
+      // Users can update and create (for view tracking)
+      // Allow create để tạo analytics khi chưa có document
+      allow create, update: if isAuthenticated();
+      
+      // Only admins can delete
+      allow delete: if isAdmin();
+    }
+  }
+}
+
