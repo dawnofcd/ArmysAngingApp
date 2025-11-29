@@ -23,12 +23,14 @@
 ## Cài đặt
 
 ### 1. Clone repository
+
 ```bash
 git clone <repository-url>
 cd 15songarmy
 ```
 
 ### 2. Cài đặt dependencies
+
 ```bash
 npm install
 ```
@@ -36,11 +38,13 @@ npm install
 ### 3. Cấu hình Firebase
 
 1. Tạo file `.env.local` từ `.env.example`:
+
 ```bash
 cp .env.example .env.local
 ```
 
 2. Điền thông tin Firebase của bạn vào `.env.local`:
+
 ```
 NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-auth-domain
@@ -79,6 +83,7 @@ npm start
 Xem file [DEPLOY.md](./DEPLOY.md) để biết hướng dẫn chi tiết về deploy.
 
 ### Tùy chọn deploy:
+
 - **Vercel** (Khuyến nghị): Tự động build và deploy từ Git
 - **Firebase Hosting**: Static export
 - **Netlify**: Tương tự Vercel

@@ -49,7 +49,7 @@ export default function AdminDashboard() {
       const songsWithAnalytics = await Promise.all(
         songsData.songs.map(async (song) => {
           const analytics = await getAnalytics(song.id);
-          return { ...song, analytics };
+          return { ...song, analytics: analytics ?? undefined };
         })
       );
 

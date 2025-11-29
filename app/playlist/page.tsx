@@ -3,16 +3,20 @@
  * Hiển thị playlist cá nhân của user
  */
 
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { getUserData, getSongById, removeFromPlaylist } from "@/utils/firestore";
-import type { Song, PlaylistItem } from "@/types";
-import { ListMusic, Trash2, Play, Music } from "lucide-react";
-import { showToast } from "@/components/Toast";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import {
+  getUserData,
+  getSongById,
+  removeFromPlaylist,
+} from '@/utils/firestore';
+import type { Song, PlaylistItem } from '@/types';
+import { ListMusic, Trash2, Play, Music } from 'lucide-react';
+import { showToast } from '@/components/Toast';
 
 interface PlaylistSong extends Song {
   playlistItem: PlaylistItem;
@@ -26,7 +30,7 @@ export default function PlaylistPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
 
@@ -53,12 +57,12 @@ export default function PlaylistPage() {
             return { ...song, playlistItem: item };
           }
           return null;
-        })
+        }),
       );
 
       setPlaylistSongs(songs.filter((s): s is PlaylistSong => s !== null));
     } catch (error) {
-      console.error("Error loading playlist:", error);
+      console.error('Error loading playlist:', error);
     } finally {
       setLoading(false);
     }
@@ -66,15 +70,15 @@ export default function PlaylistPage() {
 
   const handleRemove = async (songId: string) => {
     if (!user) return;
-    if (!confirm("Bạn có chắc muốn xóa bài hát này khỏi playlist?")) return;
+    if (!confirm('Bạn có chắc muốn xóa bài hát này khỏi playlist?')) return;
 
     try {
       await removeFromPlaylist(user.id, songId);
       setPlaylistSongs(playlistSongs.filter((song) => song.id !== songId));
-      showToast("Đã xóa khỏi playlist!", "success");
+      showToast('Đã xóa khỏi playlist!', 'success');
     } catch (error) {
-      console.error("Error removing from playlist:", error);
-      showToast("Có lỗi xảy ra khi xóa bài hát.", "error");
+      console.error('Error removing from playlist:', error);
+      showToast('Có lỗi xảy ra khi xóa bài hát.', 'error');
     }
   };
 
@@ -101,7 +105,9 @@ export default function PlaylistPage() {
         <div className="text-center py-12 text-gray-600 dark:text-gray-400">
           <Music className="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p className="text-lg mb-2">Playlist trống</p>
-          <p className="text-sm">Thêm bài hát vào playlist từ trang chủ hoặc trang chi tiết bài hát.</p>
+          <p className="text-sm">
+            Thêm bài hát vào playlist từ trang chủ hoặc trang chi tiết bài hát.
+          </p>
           <Link href="/home" className="btn-primary mt-4 inline-block">
             Khám phá bài hát
           </Link>
@@ -109,9 +115,14 @@ export default function PlaylistPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {playlistSongs.map((song) => (
-            <div key={song.id} className="card hover:shadow-lg transition-shadow">
+            <div
+              key={song.id}
+              className="card hover:shadow-lg transition-shadow"
+            >
               <div className="flex items-start justify-between mb-2">
-                <h3 className="text-xl font-bold text-military-green flex-1">{song.title}</h3>
+                <h3 className="text-xl font-bold text-military-green flex-1">
+                  {song.title}
+                </h3>
                 <button
                   onClick={() => handleRemove(song.id)}
                   className="text-red-500 hover:text-red-600 ml-2"
@@ -119,9 +130,14 @@ export default function PlaylistPage() {
                   <Trash2 className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-2">Tác giả: {song.author}</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-2">
+                Tác giả: {song.author}
+              </p>
               <p className="text-xs text-gray-500 mb-4">
-                Thêm vào: {new Date(song.playlistItem.createdAt).toLocaleDateString("vi-VN")}
+                Thêm vào:{' '}
+                {new Date(song.playlistItem.createdAt).toLocaleDateString(
+                  'vi-VN',
+                )}
               </p>
               <Link
                 href={`/songs/${song.id}`}
@@ -137,8 +153,3 @@ export default function PlaylistPage() {
     </div>
   );
 }
-
-
-
-
-

@@ -3,15 +3,15 @@
  * Quản lý người dùng và cập nhật role
  */
 
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import { getAllUsers, updateUserData } from "@/utils/firestore";
-import type { User, UserRole } from "@/types";
-import { Shield, User as UserIcon, Mail } from "lucide-react";
-import { showToast } from "@/components/Toast";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { getAllUsers, updateUserData } from '@/utils/firestore';
+import type { User, UserRole } from '@/types';
+import { Shield, User as UserIcon, Mail } from 'lucide-react';
+import { showToast } from '@/components/Toast';
 
 export default function AdminUsersPage() {
   const { user: currentUser, loading: authLoading, updateUserRole } = useAuth();
@@ -21,8 +21,8 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      if (!currentUser || currentUser.role !== "admin") {
-        router.push("/home");
+      if (!currentUser || currentUser.role !== 'admin') {
+        router.push('/home');
         return;
       }
       loadUsers();
@@ -35,34 +35,38 @@ export default function AdminUsersPage() {
       const usersData = await getAllUsers();
       setUsers(usersData);
     } catch (error) {
-      console.error("Error loading users:", error);
+      console.error('Error loading users:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
-    if (!confirm(`Bạn có chắc muốn thay đổi vai trò của người dùng này thành "${newRole}"?`))
+    if (
+      !confirm(
+        `Bạn có chắc muốn thay đổi vai trò của người dùng này thành "${newRole}"?`,
+      )
+    )
       return;
     try {
       await updateUserRole(userId, newRole);
       await updateUserData(userId, { role: newRole });
-      showToast("Cập nhật vai trò thành công!", "success");
+      showToast('Cập nhật vai trò thành công!', 'success');
       loadUsers();
     } catch (error) {
-      console.error("Error updating role:", error);
-      showToast("Có lỗi xảy ra!", "error");
+      console.error('Error updating role:', error);
+      showToast('Có lỗi xảy ra!', 'error');
     }
   };
 
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case "admin":
-        return "Quản trị viên";
-      case "editor":
-        return "Biên tập viên";
+      case 'admin':
+        return 'Quản trị viên';
+      case 'editor':
+        return 'Biên tập viên';
       default:
-        return "Người dùng";
+        return 'Người dùng';
     }
   };
 
@@ -74,13 +78,15 @@ export default function AdminUsersPage() {
     );
   }
 
-  if (!currentUser || currentUser.role !== "admin") {
+  if (!currentUser || currentUser.role !== 'admin') {
     return null;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-military-green mb-8">Quản lý người dùng</h1>
+      <h1 className="text-4xl font-bold text-military-green mb-8">
+        Quản lý người dùng
+      </h1>
 
       {users.length === 0 ? (
         <div className="text-center py-12 text-gray-600 dark:text-gray-400">
@@ -124,11 +130,11 @@ export default function AdminUsersPage() {
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 rounded-lg text-sm ${
-                          user.role === "admin"
-                            ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-                            : user.role === "editor"
-                            ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                          user.role === 'admin'
+                            ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+                            : user.role === 'editor'
+                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                         }`}
                       >
                         {getRoleLabel(user.role)}
@@ -140,7 +146,12 @@ export default function AdminUsersPage() {
                       <div className="flex items-center justify-end gap-2">
                         <select
                           value={user.role}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
+                          onChange={(e) =>
+                            handleRoleChange(
+                              user.id,
+                              e.target.value as UserRole,
+                            )
+                          }
                           className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm"
                         >
                           <option value="user">Người dùng</option>
@@ -159,8 +170,3 @@ export default function AdminUsersPage() {
     </div>
   );
 }
-
-
-
-
-

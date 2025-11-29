@@ -3,12 +3,12 @@
  * Ghi âm giọng hát người dùng (local only, không upload Firebase)
  */
 
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { Mic2, Square, Play, Download, Trash2 } from "lucide-react";
-import { cn } from "@/utils/cn";
-import { showToast } from "@/components/Toast";
+import { useState, useRef, useEffect } from 'react';
+import { Mic2, Square, Play, Download, Trash2 } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { showToast } from '@/components/Toast';
 
 export function VoiceRecorder() {
   const [isRecording, setIsRecording] = useState(false);
@@ -48,7 +48,7 @@ export function VoiceRecorder() {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         setAudioBlob(blob);
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
@@ -65,8 +65,11 @@ export function VoiceRecorder() {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
     } catch (error) {
-      console.error("Error accessing microphone:", error);
-      showToast("Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.", "error");
+      console.error('Error accessing microphone:', error);
+      showToast(
+        'Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.',
+        'error',
+      );
     }
   };
 
@@ -93,7 +96,7 @@ export function VoiceRecorder() {
   const downloadRecording = () => {
     if (audioBlob) {
       const url = URL.createObjectURL(audioBlob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = `recording-${Date.now()}.webm`;
       document.body.appendChild(a);
@@ -116,7 +119,9 @@ export function VoiceRecorder() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`;
   };
 
   return (
@@ -164,8 +169,8 @@ export function VoiceRecorder() {
                 onClick={playRecording}
                 disabled={isPlaying}
                 className={cn(
-                  "btn-primary flex items-center gap-2",
-                  isPlaying && "opacity-50 cursor-not-allowed"
+                  'btn-primary flex items-center gap-2',
+                  isPlaying && 'opacity-50 cursor-not-allowed',
                 )}
               >
                 <Play className="w-5 h-5" />
@@ -195,8 +200,3 @@ export function VoiceRecorder() {
     </div>
   );
 }
-
-
-
-
-
