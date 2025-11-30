@@ -7,7 +7,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import {
   getNotifications,
@@ -199,11 +198,10 @@ export function Notifications() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {notification.fromUserAvatar ? (
-                              <Image
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
                                 src={notification.fromUserAvatar}
                                 alt={notification.fromUserName}
-                                width={24}
-                                height={24}
                                 className="w-6 h-6 rounded-full"
                               />
                             ) : (
