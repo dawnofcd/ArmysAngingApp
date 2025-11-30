@@ -5,8 +5,9 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import {
   getNotifications,
@@ -26,6 +27,26 @@ export function Notifications() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const loadNotifications = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await getNotifications(user.id);
+      setNotifications(data);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  }, [user]);
+
+  const loadUnreadCount = useCallback(async () => {
+    if (!user) return;
+    try {
+      const count = await getUnreadNotificationCount(user.id);
+      setUnreadCount(count);
+    } catch (error) {
+      console.error('Error loading unread count:', error);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       loadNotifications();
@@ -39,27 +60,7 @@ export function Notifications() {
 
       return () => clearInterval(interval);
     }
-  }, [user]);
-
-  const loadNotifications = async () => {
-    if (!user) return;
-    try {
-      const data = await getNotifications(user.id);
-      setNotifications(data);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    }
-  };
-
-  const loadUnreadCount = async () => {
-    if (!user) return;
-    try {
-      const count = await getUnreadNotificationCount(user.id);
-      setUnreadCount(count);
-    } catch (error) {
-      console.error('Error loading unread count:', error);
-    }
-  };
+  }, [user, loadNotifications, loadUnreadCount]);
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.read) {
@@ -198,9 +199,11 @@ export function Notifications() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {notification.fromUserAvatar ? (
-                              <img
+                              <Image
                                 src={notification.fromUserAvatar}
                                 alt={notification.fromUserName}
+                                width={24}
+                                height={24}
                                 className="w-6 h-6 rounded-full"
                               />
                             ) : (
@@ -224,7 +227,7 @@ export function Notifications() {
                           </p>
                           {notification.content && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-                              "{notification.content}"
+                              &quot;{notification.content}&quot;
                             </p>
                           )}
                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
