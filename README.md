@@ -5,9 +5,11 @@
 ## Tính năng
 
 - 🎵 **Quản lý bài hát**: Xem, tìm kiếm, và quản lý bài hát theo danh mục
+- 📊 **Import Excel**: Import nhiều bài hát cùng lúc từ file Excel (Admin) - [Xem hướng dẫn](./HUONG_DAN_IMPORT_EXCEL.md)
 - 🎤 **Karaoke**: Xem video karaoke với lời bài hát highlight
 - 🎙️ **Ghi âm**: Ghi âm giọng hát của bạn
 - 💬 **Bình luận**: Thảo luận về bài hát với tính năng like và reply
+- 🔔 **Thông báo**: Nhận thông báo khi có người reply hoặc like comment của bạn
 - 📊 **Thống kê**: Xem thống kê lượt nghe và bài hát phổ biến (Admin)
 - 🏆 **Xếp hạng**: Bảng xếp hạng người dùng theo điểm số
 - 👤 **Quản lý người dùng**: Quản lý avatar, playlist, và điểm số
@@ -77,6 +79,13 @@ npm run dev
 npm run build
 npm start
 ```
+
+## Tài liệu
+
+- [DEPLOY.md](./DEPLOY.md) - Hướng dẫn deploy ứng dụng
+- [HUONG_DAN_IMPORT_EXCEL.md](./HUONG_DAN_IMPORT_EXCEL.md) - Hướng dẫn import bài hát từ Excel
+- [SETUP_ENV.md](./SETUP_ENV.md) - Hướng dẫn cấu hình environment variables
+- [HUONG_DAN_ADMIN.md](./HUONG_DAN_ADMIN.md) - Hướng dẫn sử dụng cho Admin
 
 ## Deploy
 

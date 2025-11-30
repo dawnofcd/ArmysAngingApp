@@ -16,8 +16,9 @@ import {
   deleteSong,
 } from '@/utils/firestore';
 import type { Song, Category, SongFormData } from '@/types';
-import { Plus, Edit, Trash2, Music, Search, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Music, Search, X, Upload } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { ImportSongs } from '@/components/ImportSongs';
 
 export default function AdminSongsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -28,6 +29,7 @@ export default function AdminSongsPage() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showImport, setShowImport] = useState(false);
   const [formData, setFormData] = useState<SongFormData>({
     title: '',
     author: '',
@@ -154,17 +156,26 @@ export default function AdminSongsPage() {
           <h1 className="text-4xl font-bold text-military-green">
             Quản lý bài hát
           </h1>
-          <button
-            onClick={() => {
-              setEditingSong(null);
-              resetForm();
-              setShowForm(true);
-            }}
-            className="btn-primary flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Thêm bài hát
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="btn-primary flex items-center gap-2 bg-green-600 hover:bg-green-700"
+            >
+              <Upload className="w-5 h-5" />
+              Import Excel
+            </button>
+            <button
+              onClick={() => {
+                setEditingSong(null);
+                resetForm();
+                setShowForm(true);
+              }}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Thêm bài hát
+            </button>
+          </div>
         </div>
 
         {/* Search Box */}
@@ -407,6 +418,15 @@ export default function AdminSongsPage() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* Import Modal */}
+      {showImport && (
+        <ImportSongs
+          categories={categories}
+          onImportComplete={loadData}
+          onClose={() => setShowImport(false)}
+        />
       )}
     </div>
   );

@@ -30,6 +30,7 @@ import type {
   DailyAnalytics,
   Comment,
   Notification,
+  SongFormData,
 } from '@/types';
 
 // Batch size cho pagination (tối ưu quota)
@@ -247,6 +248,86 @@ export async function deleteSong(songId: string): Promise<void> {
   batch.delete(songRef);
   batch.delete(analyticsRef);
   await batch.commit();
+}
+
+/**
+ * Import multiple songs from Excel data
+ * Returns success and failed counts
+ */
+export async function importSongsFromExcel(
+  songsData: SongFormData[],
+): Promise<{ success: number; failed: number }> {
+  if (!songsData || songsData.length === 0) {
+    throw new Error('No songs data provided');
+  }
+
+  const songsRef = collection(db, 'songs');
+  const analyticsRef = collection(db, 'analytics');
+  let success = 0;
+  let failed = 0;
+
+  // Firestore batch limit is 500 operations
+  // Each song needs 2 operations (song + analytics)
+  const BATCH_SIZE = 250; // Safe limit
+
+  for (let i = 0; i < songsData.length; i += BATCH_SIZE) {
+    const batch = writeBatch(db);
+    const batchSongs = songsData.slice(i, i + BATCH_SIZE);
+
+    try {
+      for (const songData of batchSongs) {
+        try {
+          // Validate required fields
+          if (
+            !songData.title ||
+            !songData.author ||
+            !songData.lyrics ||
+            !songData.categoryId
+          ) {
+            failed++;
+            continue;
+          }
+
+          // Create song document
+          const songDocRef = doc(songsRef);
+          const songDataToSave = {
+            title: songData.title.trim(),
+            author: songData.author.trim(),
+            lyrics: songData.lyrics.trim(),
+            videoLinkKaraoke: songData.videoLinkKaraoke?.trim() || '',
+            videoLinkPerformance: songData.videoLinkPerformance?.trim() || '',
+            categoryId: songData.categoryId.trim(),
+            year: songData.year || new Date().getFullYear(),
+            meaning: songData.meaning?.trim() || '',
+            createdAt: Timestamp.now().toMillis(),
+          };
+
+          batch.set(songDocRef, songDataToSave);
+
+          // Create analytics document
+          const analyticsDocRef = doc(analyticsRef, songDocRef.id);
+          batch.set(analyticsDocRef, {
+            views: 0,
+            completions: 0,
+            likes: 0,
+          });
+
+          success++;
+        } catch (error) {
+          console.error('Error processing song:', songData.title, error);
+          failed++;
+        }
+      }
+
+      // Commit batch
+      await batch.commit();
+    } catch (error) {
+      console.error('Error committing batch:', error);
+      failed += batchSongs.length;
+    }
+  }
+
+  return { success, failed };
 }
 
 /**
