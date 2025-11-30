@@ -94,6 +94,7 @@ export function Comments({ songId }: CommentsProps) {
       // Find the parent comment to get the original commenter
       const parentComment = comments.find((c) => c.id === parentId);
 
+      // Create the reply comment
       await createComment(
         songId,
         user.id,
@@ -103,18 +104,23 @@ export function Comments({ songId }: CommentsProps) {
         parentId,
       );
 
-      // Create notification for the parent comment owner
+      // Create notification for the parent comment owner (don't fail if this errors)
       if (parentComment && parentComment.userId !== user.id) {
-        await createNotification(
-          parentComment.userId,
-          'reply',
-          songId,
-          parentId,
-          user.id,
-          user.name,
-          user.avatarUrl,
-          replyContent.trim().substring(0, 100), // Preview of reply
-        );
+        try {
+          await createNotification(
+            parentComment.userId,
+            'reply',
+            songId,
+            parentId,
+            user.id,
+            user.name,
+            user.avatarUrl,
+            replyContent.trim().substring(0, 100), // Preview of reply
+          );
+        } catch (notifError) {
+          // Log but don't fail the reply if notification creation fails
+          console.error('Error creating notification:', notifError);
+        }
       }
 
       setReplyContent('');
@@ -123,7 +129,13 @@ export function Comments({ songId }: CommentsProps) {
       showToast('Trả lời thành công!', 'success');
     } catch (error: any) {
       console.error('Error replying:', error);
-      showToast('Có lỗi xảy ra khi trả lời!', 'error');
+      if (error?.code === 'permission-denied') {
+        showToast('Bạn không có quyền trả lời bình luận', 'error');
+      } else if (error?.code === 'unauthenticated') {
+        showToast('Vui lòng đăng nhập để trả lời', 'error');
+      } else {
+        showToast('Có lỗi xảy ra khi trả lời!', 'error');
+      }
     }
   };
 
@@ -138,26 +150,36 @@ export function Comments({ songId }: CommentsProps) {
       const comment = comments.find((c) => c.id === commentId);
       const wasLiked = comment?.likedBy?.includes(user.id);
 
+      // Like/unlike the comment
       await likeComment(commentId, user.id);
 
       // Create notification only if this is a new like (not unliking)
       if (comment && !wasLiked && comment.userId !== user.id) {
-        await createNotification(
-          comment.userId,
-          'like',
-          songId,
-          commentId,
-          user.id,
-          user.name,
-          user.avatarUrl,
-          comment.content.substring(0, 100), // Preview of comment
-        );
+        try {
+          await createNotification(
+            comment.userId,
+            'like',
+            songId,
+            commentId,
+            user.id,
+            user.name,
+            user.avatarUrl,
+            comment.content.substring(0, 100), // Preview of comment
+          );
+        } catch (notifError) {
+          // Log but don't fail the like if notification creation fails
+          console.error('Error creating notification:', notifError);
+        }
       }
 
       await loadComments();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error liking comment:', error);
-      showToast('Có lỗi xảy ra khi thích bình luận', 'error');
+      if (error?.code === 'permission-denied') {
+        showToast('Bạn không có quyền thích bình luận', 'error');
+      } else {
+        showToast('Có lỗi xảy ra khi thích bình luận', 'error');
+      }
     }
   };
 
