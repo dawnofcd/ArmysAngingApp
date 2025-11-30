@@ -104,3 +104,18 @@ export interface Comment {
   likes?: number; // Số lượt like
   likedBy?: string[]; // Array of user IDs who liked this comment
 }
+
+// Notification interface
+export interface Notification {
+  id: string;
+  userId: string; // User who receives the notification
+  type: 'reply' | 'like'; // Type of notification
+  songId: string; // Song where the comment is
+  commentId: string; // Comment that was replied to or liked
+  fromUserId: string; // User who performed the action
+  fromUserName: string; // Name of user who performed the action
+  fromUserAvatar?: string; // Avatar of user who performed the action
+  content?: string; // Preview of comment/reply content
+  read: boolean; // Whether notification has been read
+  createdAt: number; // When notification was created
+}

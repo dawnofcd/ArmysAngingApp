@@ -13,6 +13,7 @@ import {
   updateComment,
   deleteComment,
   likeComment,
+  createNotification,
 } from '@/utils/firestore';
 import type { Comment } from '@/types';
 import {
@@ -90,6 +91,9 @@ export function Comments({ songId }: CommentsProps) {
     if (!user || !replyContent.trim()) return;
 
     try {
+      // Find the parent comment to get the original commenter
+      const parentComment = comments.find((c) => c.id === parentId);
+
       await createComment(
         songId,
         user.id,
@@ -98,6 +102,21 @@ export function Comments({ songId }: CommentsProps) {
         replyContent.trim(),
         parentId,
       );
+
+      // Create notification for the parent comment owner
+      if (parentComment && parentComment.userId !== user.id) {
+        await createNotification(
+          parentComment.userId,
+          'reply',
+          songId,
+          parentId,
+          user.id,
+          user.name,
+          user.avatarUrl,
+          replyContent.trim().substring(0, 100), // Preview of reply
+        );
+      }
+
       setReplyContent('');
       setReplyingTo(null);
       await loadComments();
@@ -115,7 +134,26 @@ export function Comments({ songId }: CommentsProps) {
     }
 
     try {
+      // Find the comment to get the commenter
+      const comment = comments.find((c) => c.id === commentId);
+      const wasLiked = comment?.likedBy?.includes(user.id);
+
       await likeComment(commentId, user.id);
+
+      // Create notification only if this is a new like (not unliking)
+      if (comment && !wasLiked && comment.userId !== user.id) {
+        await createNotification(
+          comment.userId,
+          'like',
+          songId,
+          commentId,
+          user.id,
+          user.name,
+          user.avatarUrl,
+          comment.content.substring(0, 100), // Preview of comment
+        );
+      }
+
       await loadComments();
     } catch (error) {
       console.error('Error liking comment:', error);
@@ -230,7 +268,10 @@ export function Comments({ songId }: CommentsProps) {
             return (
               <div key={comment.id}>
                 {/* Parent Comment */}
-                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <div
+                  id={`comment-${comment.id}`}
+                  className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg scroll-mt-20"
+                >
                   <div className="flex items-start gap-3">
                     {/* Avatar */}
                     <div className="flex-shrink-0">
@@ -409,7 +450,8 @@ export function Comments({ songId }: CommentsProps) {
                       return (
                         <div
                           key={reply.id}
-                          className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg"
+                          id={`comment-${reply.id}`}
+                          className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg scroll-mt-20"
                         >
                           <div className="flex items-start gap-2">
                             <div className="flex-shrink-0">

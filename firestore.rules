@@ -76,16 +76,34 @@ service cloud.firestore {
     }
     
     // Analytics collection
-    match /analytics/{songId} {
-      // Authenticated users can read
-      allow read: if isAuthenticated();
-      
-      // Users can update and create (for view tracking)
-      // Allow create để tạo analytics khi chưa có document
-      allow create, update: if isAuthenticated();
+    match /analytics/{documentId} {
+      // Daily analytics (daily_yyyy-mm-dd) - allow unauthenticated writes for page views
+      // Allow read/write for daily analytics (documentId starts with "daily_")
+      // or for authenticated users
+      allow read: if documentId.matches('daily_.*') || isAuthenticated();
+      allow create: if documentId.matches('daily_.*') || isAuthenticated();
+      allow update: if documentId.matches('daily_.*') || isAuthenticated();
       
       // Only admins can delete
       allow delete: if isAdmin();
+    }
+    
+    // Notifications collection
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can create notifications (system will create for other users)
+      allow create: if isAuthenticated();
+      
+      // Users can update their own notifications (mark as read)
+      allow update: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      
+      // Users can delete their own notifications
+      allow delete: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
     }
   }
 }

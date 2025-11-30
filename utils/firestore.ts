@@ -29,6 +29,7 @@ import type {
   Analytics,
   DailyAnalytics,
   Comment,
+  Notification,
 } from '@/types';
 
 // Batch size cho pagination (tối ưu quota)
@@ -673,4 +674,106 @@ export async function updateComment(
 export async function deleteComment(commentId: string): Promise<void> {
   const commentRef = doc(db, 'comments', commentId);
   await deleteDoc(commentRef);
+}
+
+/**
+ * Create a notification
+ */
+export async function createNotification(
+  userId: string,
+  type: 'reply' | 'like',
+  songId: string,
+  commentId: string,
+  fromUserId: string,
+  fromUserName: string,
+  fromUserAvatar?: string,
+  content?: string,
+): Promise<void> {
+  // Don't create notification if user is notifying themselves
+  if (userId === fromUserId) return;
+
+  const notificationsRef = collection(db, 'notifications');
+  await addDoc(notificationsRef, {
+    userId,
+    type,
+    songId,
+    commentId,
+    fromUserId,
+    fromUserName,
+    fromUserAvatar,
+    content,
+    read: false,
+    createdAt: Timestamp.now().toMillis(),
+  });
+}
+
+/**
+ * Get notifications for a user
+ */
+export async function getNotifications(
+  userId: string,
+): Promise<Notification[]> {
+  const notificationsRef = collection(db, 'notifications');
+  const q = query(
+    notificationsRef,
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc'),
+    limit(50),
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Notification[];
+}
+
+/**
+ * Mark notification as read
+ */
+export async function markNotificationAsRead(
+  notificationId: string,
+): Promise<void> {
+  const notificationRef = doc(db, 'notifications', notificationId);
+  await updateDoc(notificationRef, {
+    read: true,
+  });
+}
+
+/**
+ * Mark all notifications as read for a user
+ */
+export async function markAllNotificationsAsRead(
+  userId: string,
+): Promise<void> {
+  const notificationsRef = collection(db, 'notifications');
+  const q = query(
+    notificationsRef,
+    where('userId', '==', userId),
+    where('read', '==', false),
+  );
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) return;
+
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((doc) => {
+    batch.update(doc.ref, { read: true });
+  });
+  await batch.commit();
+}
+
+/**
+ * Get unread notification count
+ */
+export async function getUnreadNotificationCount(
+  userId: string,
+): Promise<number> {
+  const notificationsRef = collection(db, 'notifications');
+  const q = query(
+    notificationsRef,
+    where('userId', '==', userId),
+    where('read', '==', false),
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.size;
 }

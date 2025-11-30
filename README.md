@@ -117,4 +117,4 @@ Xem file [DEPLOY.md](./DEPLOY.md) để biết hướng dẫn chi tiết về de
 
 ## License
 
-Copyright © 2025 - Văn Phước
+Copyright © 2025 - Hung Vo
