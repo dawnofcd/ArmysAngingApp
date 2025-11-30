@@ -58,6 +58,38 @@ export default function SongDetailPage() {
     }
   }, [user, authLoading, params.id, router]);
 
+  // Scroll to comment when hash is present in URL
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash && song) {
+      const commentId = window.location.hash.substring(1); // Remove #
+      // Wait a bit for comments to load
+      const timer = setTimeout(() => {
+        const commentElement = document.getElementById(commentId);
+        if (commentElement) {
+          commentElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+          // Highlight the comment briefly
+          commentElement.classList.add(
+            'ring-2',
+            'ring-military-green',
+            'ring-opacity-50',
+          );
+          setTimeout(() => {
+            commentElement.classList.remove(
+              'ring-2',
+              'ring-military-green',
+              'ring-opacity-50',
+            );
+          }, 2000);
+        }
+      }, 1000); // Wait for comments component to load
+
+      return () => clearTimeout(timer);
+    }
+  }, [song, params.id]);
+
   const loadSong = async () => {
     if (!params.id || typeof params.id !== 'string') return;
     setLoading(true);
