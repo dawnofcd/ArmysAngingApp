@@ -693,18 +693,26 @@ export async function createNotification(
   if (userId === fromUserId) return;
 
   const notificationsRef = collection(db, 'notifications');
-  await addDoc(notificationsRef, {
+  const notificationData: any = {
     userId,
     type,
     songId,
     commentId,
     fromUserId,
     fromUserName,
-    fromUserAvatar,
-    content,
     read: false,
     createdAt: Timestamp.now().toMillis(),
-  });
+  };
+
+  // Only add optional fields if they have values (Firestore doesn't allow undefined)
+  if (fromUserAvatar) {
+    notificationData.fromUserAvatar = fromUserAvatar;
+  }
+  if (content) {
+    notificationData.content = content;
+  }
+
+  await addDoc(notificationsRef, notificationData);
 }
 
 /**

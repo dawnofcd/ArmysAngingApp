@@ -91,11 +91,17 @@ export function Comments({ songId }: CommentsProps) {
     if (!user || !replyContent.trim()) return;
 
     try {
-      // Find the parent comment to get the original commenter
+      // Find the parent comment to get the original commenter BEFORE creating the reply
       const parentComment = comments.find((c) => c.id === parentId);
 
+      if (!parentComment) {
+        console.error('Parent comment not found:', parentId);
+        showToast('Không tìm thấy bình luận gốc', 'error');
+        return;
+      }
+
       // Create the reply comment
-      await createComment(
+      const replyCommentId = await createComment(
         songId,
         user.id,
         user.name,
@@ -105,21 +111,27 @@ export function Comments({ songId }: CommentsProps) {
       );
 
       // Create notification for the parent comment owner (don't fail if this errors)
-      if (parentComment && parentComment.userId !== user.id) {
+      if (parentComment.userId !== user.id) {
         try {
           await createNotification(
             parentComment.userId,
             'reply',
             songId,
-            parentId,
+            parentId, // Use parent comment ID, not the reply ID
             user.id,
             user.name,
             user.avatarUrl,
             replyContent.trim().substring(0, 100), // Preview of reply
           );
-        } catch (notifError) {
+        } catch (notifError: any) {
           // Log but don't fail the reply if notification creation fails
           console.error('Error creating notification:', notifError);
+          console.error('Error details:', {
+            code: notifError?.code,
+            message: notifError?.message,
+            userId: parentComment.userId,
+            fromUserId: user.id,
+          });
         }
       }
 

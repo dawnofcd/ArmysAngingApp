@@ -91,15 +91,25 @@ service cloud.firestore {
     // Notifications collection
     match /notifications/{notificationId} {
       // Users can read their own notifications
+      // For queries, Firestore will only return documents that pass this rule
       allow read: if isAuthenticated() && 
                      resource.data.userId == request.auth.uid;
       
       // Users can create notifications (system will create for other users)
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId is string &&
+                     request.resource.data.type is string &&
+                     request.resource.data.songId is string &&
+                     request.resource.data.commentId is string &&
+                     request.resource.data.fromUserId is string &&
+                     request.resource.data.fromUserName is string &&
+                     request.resource.data.read == false &&
+                     request.resource.data.createdAt is number;
       
       // Users can update their own notifications (mark as read)
       allow update: if isAuthenticated() && 
-                     resource.data.userId == request.auth.uid;
+                     resource.data.userId == request.auth.uid &&
+                     request.resource.data.read == true;
       
       // Users can delete their own notifications
       allow delete: if isAuthenticated() && 
